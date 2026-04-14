@@ -1,7 +1,43 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-void main() {
+// 1. Create a global instance
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+FlutterLocalNotificationsPlugin();
+
+void main() async {
+  // 2. Required for any async setup in main
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // 3. Android-specific settings (icon must exist in android/app/src/main/res/drawable)
+  const AndroidInitializationSettings initializationSettingsAndroid =
+  AndroidInitializationSettings('@mipmap/ic_launcher');
+
+  // 4. iOS-specific settings
+  const DarwinInitializationSettings initializationSettingsIOS =
+  DarwinInitializationSettings(
+    requestAlertPermission: true,
+    requestBadgePermission: true,
+    requestSoundPermission: true,
+  );
+
+  // 5. Combine and Initialize
+  const InitializationSettings initializationSettings = InitializationSettings(
+    android: initializationSettingsAndroid,
+    iOS: initializationSettingsIOS);
+
+  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+
   runApp(const MyApp());
+}
+/**
+ *  Helper function to pop up the alert
+ */
+Future<void> showTriggerAlert(String message) async {
+  const NotificationDetails details = NotificationDetails(
+    android: AndroidNotificationDetails('esp_channel', 'ESP32 Alerts', importance: Importance.max, priority: Priority.high),
+  );
+  await flutterLocalNotificationsPlugin.show(0, 'ESP32 Alert', message, details);
 }
 
 class MyApp extends StatelessWidget {
@@ -30,10 +66,11 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: .fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const MyHomePage(title: 'Welcome to the DoorDash Simulator'),
+      home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
+
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
